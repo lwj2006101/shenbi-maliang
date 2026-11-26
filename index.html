@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>神笔马良 The Magical Brush · 让孩子的画活起来</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%96%8C%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="mode-child">
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brush">🖌️</span>
+    <div class="brand-txt">
+      <b>神笔马良</b>
+      <small>The Magical Brush · 让孩子的画活起来</small>
+    </div>
+  </div>
+  <nav class="steps" id="steps" aria-label="创作流程">
+    <button class="step active" data-step="1"><i>1</i><span class="step-lbl" data-child="画一画" data-parent="画一画">画一画</span></button>
+    <button class="step parent-only" data-step="2"><i>2</i><span class="step-lbl">认一认</span></button>
+    <button class="step" data-step="3"><i class="step-idx" data-child="2" data-parent="3">2</i><span class="step-lbl">动起来</span></button>
+    <button class="step parent-only" data-step="4"><i>4</i><span class="step-lbl">讲故事</span></button>
+    <button class="step parent-only" data-step="5"><i>5</i><span class="step-lbl">来配音</span></button>
+    <button class="step" data-step="6"><i class="step-idx" data-child="3" data-parent="6">3</i><span class="step-lbl" data-child="听绘本" data-parent="看绘本">听绘本</span></button>
+  </nav>
+  <div class="top-actions">
+    <div class="role-switch" role="group" aria-label="儿童与家长模式切换">
+      <button class="role-btn on" id="btnModeChild" title="大按钮简洁视图，聚焦画、动、听">🎈 儿童模式</button>
+      <button class="role-btn" id="btnModeParent" title="管理骨架校正、故事分支、配音与协作设置">👨‍👩‍👧 家长工坊</button>
+    </div>
+    <span id="netBadge" class="badge badge-degrade parent-only">端侧运行</span>
+    <button class="btn ghost parent-only" id="btnSettings">⚙ 设置</button>
+  </div>
+</header>
+
+<section class="projectbar" aria-label="作品保存与恢复">
+  <button class="btn ghost" id="btnSaveDraft">💾 保存草稿</button>
+  <button class="btn ghost" id="btnImportProject">📂 导入工程 ZIP</button>
+  <span id="draftStatus" role="status" aria-live="polite">草稿自动保存在本机浏览器</span>
+  <input type="file" id="projectFileInput" accept=".zip,application/zip" hidden>
+</section>
+<section class="draft-recovery" id="draftRecovery" aria-label="恢复上次作品" hidden>
+  <span id="draftRecoveryText">发现上次作品。</span>
+  <button class="btn" id="btnRestoreDraft">恢复上次作品</button>
+  <button class="btn ghost" id="btnStartFresh">开始新作品</button>
+</section>
+
+<main class="layout">
+
+  <!-- ================= 左侧工具面板 ================= -->
+  <aside class="panel left">
+
+    <!-- 步骤1：画一画 -->
+    <div class="toolblock" data-tool="1">
+      <h3>🎨 选颜色画一画</h3>
+      <div class="swatches" id="swatches"></div>
+      <label class="row"><span>画笔粗细</span><input type="range" id="brushSize" min="2" max="34" value="9"><b id="brushSizeVal">9</b></label>
+      <div class="btn-line">
+        <button class="btn on" id="toolPen">🖊️ 画笔</button>
+        <button class="btn ghost" id="toolEraser">🧽 橡皮</button>
+      </div>
+      <h3>🖼️ 示例小主角</h3>
+      <div class="chips" id="sampleChips">
+        <button class="chip on" data-sample="stick" data-kind="小朋友" data-name="小奇">火柴人</button>
+        <button class="chip" data-sample="dog" data-kind="小狗" data-name="豆豆">小狗</button>
+        <button class="chip" data-sample="dino" data-kind="恐龙" data-name="壮壮">恐龙</button>
+        <button class="chip" data-sample="cat" data-kind="小猫" data-name="咪咪">小猫</button>
+        <button class="chip" data-sample="girl" data-kind="公主" data-name="朵朵">小公主</button>
+        <button class="chip" data-sample="rocket" data-kind="小火箭" data-name="嗖嗖">小火箭</button>
+      </div>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnUpload">📷 拍照/上传画作</button>
+        <button class="btn ghost parent-only" id="btnNoise">🌪 干扰背景</button>
+      </div>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnUndo">↩ 撤销</button>
+        <button class="btn ghost" id="btnClear">🗑 清空</button>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <div class="tipbox">画好小主角后，直接点右下方大按钮<b>「✨ 让它动起来」</b>就能看动画啦！</div>
+    </div>
+
+    <!-- 步骤2：认一认（家长工坊精细校正） -->
+    <div class="toolblock" data-tool="2" hidden>
+      <h3>🔍 角色轮廓与骨架</h3>
+      <div class="seg-view">
+        <label class="radio"><input type="radio" name="segview" value="overlay" checked> 叠加显示</label>
+        <label class="radio"><input type="radio" name="segview" value="mask"> 分割掩码</label>
+        <label class="radio"><input type="radio" name="segview" value="skeleton"> 骨架</label>
+        <label class="radio"><input type="radio" name="segview" value="src"> 原图</label>
+      </div>
+      <label class="row"><span>骨骼模板</span>
+        <select id="rigTemplate">
+          <option value="auto">自动判断</option>
+          <option value="humanoid">人形（直立）</option>
+          <option value="quadruped">四足动物</option>
+          <option value="prop">飞行器/器物</option>
+        </select>
+      </label>
+      <div class="btn-line">
+        <button class="btn" id="btnDetect">🔄 重新自动识别</button>
+        <button class="btn ghost" id="btnFlipUp">🔃 翻转头顶方向</button>
+      </div>
+      <h3>🩹 掩码补擦（支持框外补画）</h3>
+      <div class="btn-line">
+        <button class="btn ghost" id="fixAdd">➕ 补上</button>
+        <button class="btn ghost" id="fixDel">➖ 擦掉</button>
+        <button class="btn ghost on" id="fixOff">✋ 拖关节</button>
+      </div>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnMaskUndo">↩ 撤销修补</button>
+      </div>
+      <label class="row"><span>修补笔尖</span><input type="range" id="fixSize" min="4" max="44" value="16"><b id="fixSizeVal">16</b></label>
+      <div class="conf">
+        <div class="conf-bar"><i id="confBar" style="width:0%"></i></div>
+        <span>识别完整度 <b id="confVal">—</b> · <span id="confNote">等待识别</span></span>
+      </div>
+      <div class="tipbox">拖动<b>黄点</b>可校正关节（松手只重绑不覆盖）；漏掉的分离手臂可直接点「➕ 补上」在框外涂抹补齐。</div>
+    </div>
+
+    <!-- 步骤3：动起来 -->
+    <div class="toolblock" data-tool="3" hidden>
+      <h3>🏃 说一句话让它动</h3>
+      <label class="row col"><span>输入或说出动作（如：开心地跳舞）</span>
+        <div class="inline-input">
+          <input type="text" id="motionText" value="高兴地走路" placeholder="例如：开心地跳舞 / 慢慢挥手 / 发射升空">
+          <button class="btn ghost icon-btn" id="btnMotionASR" title="语音说动作">🎤</button>
+        </div>
+      </label>
+      <div class="chips" id="motionChips">
+        <button class="chip" data-m="walk">🚶 走路</button>
+        <button class="chip" data-m="run">🏃 跑步</button>
+        <button class="chip" data-m="jump">🦘 跳跃</button>
+        <button class="chip" data-m="wave">👋 挥手</button>
+        <button class="chip" data-m="dance">💃 跳舞</button>
+        <button class="chip" data-m="fly">🚀 飞翔</button>
+        <button class="chip" data-m="nod">🙂 点头</button>
+        <button class="chip" data-m="wag">🐕 摇尾巴</button>
+        <button class="chip" data-m="sleep">😴 睡觉</button>
+        <button class="chip" data-m="roll">🤸 打滚</button>
+        <button class="chip" data-m="cheer">🙌 欢呼</button>
+        <button class="chip" data-m="idle">🧍 待机</button>
+      </div>
+      <label class="row"><span>快慢</span><input type="range" id="mSpeed" min="30" max="200" value="100"><b id="mSpeedVal">1.0×</b></label>
+      <label class="row"><span>幅度</span><input type="range" id="mAmp" min="40" max="180" value="100"><b id="mAmpVal">1.0×</b></label>
+      <div class="btn-line">
+        <button class="btn" id="btnPlay">▶ 播放</button>
+        <button class="btn ghost" id="btnStop">⏹ 停下复位</button>
+      </div>
+      <label class="row parent-only"><span>显示地面</span><input type="checkbox" id="showGround" checked></label>
+      <div class="btn-line parent-only">
+        <button class="btn ghost" id="btnExportMotion">📤 导出动作 JSON</button>
+      </div>
+      <div class="tipbox child-only">点上面的动作小贴纸，或者直接对它说“跳舞”“飞起来”试试看！</div>
+      <div class="tipbox parent-only">支持复合中文动作短语解析；动作 JSON 采用 Godot <code>Bone2D</code> 全局旋转角导出。</div>
+    </div>
+
+    <!-- 步骤4：讲故事（家长工坊深度定制） -->
+    <div class="toolblock" data-tool="4" hidden>
+      <h3>👦 角色与想法</h3>
+      <label class="row"><span>名字</span><input type="text" id="charName" value="小奇"></label>
+      <label class="row"><span>类别</span>
+        <select id="charKind">
+          <option value="小朋友">小朋友</option>
+          <option value="小狗">小狗</option>
+          <option value="恐龙">恐龙</option>
+          <option value="小猫">小猫</option>
+          <option value="公主">公主</option>
+          <option value="小火箭">小火箭</option>
+          <option value="小怪兽">小怪兽</option>
+        </select>
+      </label>
+      <h3>🎙️ 孩子想讲什么</h3>
+      <textarea id="childCmd" rows="2" placeholder="例如：它想去太空找会唱歌的星星">它想去太空冒险</textarea>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnASR">🎤 语音输入想法</button>
+      </div>
+      <h3>📚 个性化篇幅与适龄设定</h3>
+      <label class="row"><span>适龄语言</span>
+        <select id="ageGroup">
+          <option value="3-4">3–4岁（低幼叠词短句）</option>
+          <option value="5-6" selected>5–6岁（启蒙互动叙事）</option>
+          <option value="7-8">7–8岁（少儿进阶探索）</option>
+        </select>
+      </label>
+      <label class="row"><span>故事篇幅</span>
+        <select id="sceneCount">
+          <option value="3" selected>3 幕（经典短篇）</option>
+          <option value="4">4 幕（起承转合）</option>
+          <option value="6">6 幕（完整绘本）</option>
+        </select>
+      </label>
+      <label class="row"><span>主题氛围</span>
+        <select id="storyTone">
+          <option value="adventure">奇幻冒险</option>
+          <option value="bedtime">温柔睡前</option>
+          <option value="science">趣味科普</option>
+          <option value="friendship">友爱互助</option>
+        </select>
+      </label>
+      <label class="row"><span>成长目标</span>
+        <select id="eduGoal">
+          <option value="planet">认识行星</option>
+          <option value="animal">动物习性</option>
+          <option value="share">学会分享</option>
+          <option value="brave">勇敢探索</option>
+          <option value="nature">四季自然</option>
+          <option value="number">数字认知</option>
+        </select>
+      </label>
+      <div class="btn-line">
+        <button class="btn" id="btnStory">✨ 生成个性化故事</button>
+      </div>
+      <div class="tipbox">自动提取画作色彩与笔触融入叙事，支持右侧<b>剧情分支选择</b>与<b>逐幕文字精修</b>。</div>
+    </div>
+
+    <!-- 步骤5：配音 -->
+    <div class="toolblock" data-tool="5" hidden>
+      <h3>🗣️ 朗读声音</h3>
+      <label class="row col"><span>选择语音</span><select id="voiceSel"></select></label>
+      <h3>💗 情感韵律</h3>
+      <div class="chips" id="emoChips">
+        <button class="chip on" data-e="auto">自动（随剧情）</button>
+        <button class="chip" data-e="开心">快乐</button>
+        <button class="chip" data-e="温柔">温柔</button>
+        <button class="chip" data-e="紧张">紧张</button>
+        <button class="chip" data-e="平静">平静</button>
+      </div>
+      <label class="row"><span>语速</span><input type="range" id="vRate" min="50" max="180" value="100"><b id="vRateVal">1.0×</b></label>
+      <label class="row"><span>音调</span><input type="range" id="vPitch" min="50" max="180" value="100"><b id="vPitchVal">1.0×</b></label>
+      <h3>👨‍👩‍👧 家长声音特征分析</h3>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnRec">🔴 录制样本（10秒）</button>
+        <button class="btn ghost" id="btnRecPlay">▶ 试听原声</button>
+      </div>
+      <div class="conf"><div class="conf-bar"><i id="vocalBar" style="width:0%"></i></div>
+        <span>声音特征 <b id="vocalVal">未采集</b></span></div>
+      <div class="btn-line">
+        <button class="btn" id="btnNarrate">▶ 朗读整个故事</button>
+        <button class="btn ghost" id="btnStopRead">⏹ 停止</button>
+      </div>
+      <div class="tipbox">录音用于估计家长音高与有声段占比，调节朗读韵律并可嵌入离线绘本，<b>不执行家长音色克隆</b>。</div>
+    </div>
+
+    <!-- 步骤6：绘本与成品导出 -->
+    <div class="toolblock" data-tool="6" hidden>
+      <div class="child-only">
+        <h3>✨ 换个故事创意</h3>
+        <label class="row col"><span>告诉小主角去哪儿玩</span>
+          <input type="text" id="childQuickCmd" value="它想去太空冒险" placeholder="例如：去海底看发光珊瑚">
+        </label>
+        <div class="btn-line">
+          <button class="btn ghost" id="btnChildRemakeStory">🔄 换一个新故事</button>
+        </div>
+      </div>
+      <h3>📖 有声绘本播放</h3>
+      <div class="btn-line">
+        <button class="btn ghost" id="bkPrev">⏮ 上一页</button>
+        <button class="btn" id="bkPlay">▶ 自动播放</button>
+        <button class="btn ghost" id="bkNext">⏭ 下一页</button>
+      </div>
+      <label class="row"><span>边看边读出声音</span><input type="checkbox" id="bkRead" checked></label>
+      <h3>🎁 保存动态有声作品</h3>
+      <div class="btn-line">
+        <button class="btn" id="btnExportHTMLBook">📕 导出离线有声绘本 (.html)</button>
+      </div>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnExportVideo">🎬 导出有声动画视频 (.webm)</button>
+      </div>
+      <h3 class="parent-only">📦 图片与工程归档</h3>
+      <div class="btn-line parent-only">
+        <button class="btn ghost" id="btnExportPng">🖼 当前页图片</button>
+        <button class="btn ghost" id="btnExportAll">📚 全页图片包</button>
+      </div>
+      <div class="btn-line">
+        <button class="btn ghost" id="btnExportProj">📦 导出可编辑工程（ZIP）</button>
+      </div>
+      <div class="tipbox"><b>离线有声绘本 (.html)</b> 可直接发给家人，不联网双击即可播放动态角色、字幕与伴奏配音！</div>
+    </div>
+  </aside>
+
+  <!-- ================= 中间舞台 ================= -->
+  <section class="stage">
+
+    <div class="view" data-view="1">
+      <div class="stage-head">
+        <h2>① 画一画 —— 把心里的小主角画出来</h2>
+        <span class="hint">在白纸上自由画画，或点左侧示例小主角</span>
+      </div>
+      <div class="canvas-wrap"><canvas id="drawCanvas" width="760" height="540"></canvas></div>
+      <div class="stage-cta child-only">
+        <button class="btn big-cta" id="btnNextToAnim">✨ 画好啦，让它动起来 👉</button>
+      </div>
+    </div>
+
+    <div class="view" data-view="2" hidden>
+      <div class="stage-head"><h2>② 认一认 —— 轮廓分割与关节点校正</h2><span class="hint" id="segHint">拖动黄点微调关节，或用补上/擦掉修补轮廓</span></div>
+      <div class="canvas-wrap"><canvas id="segCanvas" width="760" height="540"></canvas></div>
+      <div class="stage-foot" id="segFoot">—</div>
+    </div>
+
+    <div class="view" data-view="3" hidden>
+      <div class="stage-head"><h2><span class="step-badge-txt" data-child="②" data-parent="③">②</span> 动起来 —— 说句话让小主角活起来</h2><span class="hint" id="motionHint">—</span></div>
+      <div class="canvas-wrap"><canvas id="animCanvas" width="760" height="540"></canvas></div>
+      <div class="stage-foot parent-only" id="motionFoot">—</div>
+      <div class="stage-cta child-only">
+        <button class="btn ghost" id="btnBackToDraw">👈 再添几笔</button>
+        <button class="btn big-cta" id="btnNextToBook">📖 生成有声动画绘本 👉</button>
+      </div>
+    </div>
+
+    <div class="view" data-view="4" hidden>
+      <div class="stage-head"><h2>④ 讲故事 —— 分支选择与逐幕精修</h2><span class="hint" id="storyHint">—</span></div>
+      <div class="story-wrap" id="storyWrap">
+        <div class="empty">还没有故事。在左侧填好角色与想法，点「✨ 生成个性化故事」。</div>
+      </div>
+    </div>
+
+    <div class="view" data-view="5" hidden>
+      <div class="stage-head"><h2>⑤ 来配音 —— 情感朗读与家长声音特征</h2><span class="hint">浏览器语音朗读 · 家长录音估计音高与节奏</span></div>
+      <div class="story-wrap" id="narrationWrap">
+        <div class="empty">还没有旁白。请先生成故事。</div>
+      </div>
+    </div>
+
+    <div class="view" data-view="6" hidden>
+      <div class="stage-head"><h2><span class="step-badge-txt" data-child="③" data-parent="⑥">③</span> 听绘本 —— 动态角色 + 分支故事 + 伴奏配音</h2><span class="hint" id="bookHint">—</span></div>
+      <div class="canvas-wrap"><canvas id="bookCanvas" width="760" height="540"></canvas></div>
+      <div class="story-wrap caption" id="bookCaption">—</div>
+    </div>
+
+  </section>
+
+  <!-- ================= 右侧流水线面板（仅家长工坊可见） ================= -->
+  <aside class="panel right parent-only">
+    <h3>☁️ 运行状态与流水线</h3>
+    <div class="modeswitch"><span class="hint">端侧图像/动画引擎 · 可选云端模型协同</span></div>
+    <ul class="pipe" id="pipeList"></ul>
+    <div class="pipe-summary" id="pipeSummary">等待任务执行</div>
+
+    <h3>🗂 作品结构参数</h3>
+    <div class="info" id="infoBox">
+      <div class="kv"><span>角色</span><b id="iRole">—</b></div>
+      <div class="kv"><span>裁剪尺寸</span><b id="iSize">—</b></div>
+      <div class="kv"><span>关节点</span><b id="iJoints">—</b></div>
+      <div class="kv"><span>骨骼数</span><b id="iBones">—</b></div>
+      <div class="kv"><span>当前动作</span><b id="iMotion">—</b></div>
+      <div class="kv"><span>故事篇幅</span><b id="iStory">—</b></div>
+    </div>
+
+    <h3>💡 操作建议</h3>
+    <div class="tip" id="tipBox">先在画纸上画一个角色吧。</div>
+  </aside>
+</main>
+
+<footer class="statusbar">
+  <span>🖌️ 神笔马良 V0.7 · 儿童跨屏有声绘本创作平台</span>
+  <span id="statusMsg">就绪</span>
+</footer>
+
+<div id="toasts"></div>
+
+<!-- 设置弹窗 -->
+<div class="modal" id="settingsModal" hidden>
+  <div class="modal-card">
+    <h2>⚙ 家长与系统设置</h2>
+    <h4>云端大模型与视觉理解（由服务端安全代理）</h4>
+    <p class="tipbox">模型密钥仅由服务端环境变量 <code>LLM_API_KEY</code> 提供（开启 <code>LLM_VISION=1</code> 可传入画作缩略图）。未配置时自动使用端侧引擎。</p>
+    <label class="row col"><span>模型名称</span><input type="text" id="cfgModel" value="qwen-plus"></label>
+    <label class="row"><span>向多模态模型附带画作缩略图</span><input type="checkbox" id="cfgVision"></label>
+    <h4>家庭跨屏协作（同一局域网）</h4>
+    <label class="row col"><span>家庭房间码（两台设备填写相同 12–48 位代码）</span><input type="text" id="syncRoom" minlength="12" maxlength="48" autocomplete="off" placeholder="至少 12 位字母数字临时房间码"></label>
+    <div class="btn-line"><button class="btn" id="btnSyncConnect">连接房间</button><button class="btn ghost" id="btnSyncDisconnect">断开</button></div>
+    <p id="syncState" class="hint">未连接</p>
+    <h4>渲染与预取</h4>
+    <label class="row"><span>渲染精度</span>
+      <select id="cfgQuality"><option value="1">高</option><option value="0.75" selected>中</option><option value="0.55">低（省电流畅）</option></select>
+    </label>
+    <label class="row"><span>异步预取（边画边识别）</span><input type="checkbox" id="cfgPrefetch" checked></label>
+    <div class="btn-line right">
+      <button class="btn ghost" id="btnCfgCancel">取消</button>
+      <button class="btn" id="btnCfgSave">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/cv.js"></script>
+<script src="js/skeleton.js"></script>
+<script src="js/skin.js"></script>
+<script src="js/motion.js"></script>
+<script src="js/story.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/background.js"></script>
+<script src="js/book.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/pipeline.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/archive.js"></script>
+<script src="js/project.js"></script>
+<script src="js/workspace.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
